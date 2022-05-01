@@ -39,7 +39,24 @@ async function run(){
 
        //update delivery item on Click
        app.put('/item/:id',async(req,res)=>{
-           
+           const id=req.params.id;
+          const data=req.body;
+           console.log(data)
+          //const quantity=data.quantit;
+           const filter={
+               _id:ObjectId(id)
+          };
+           const options={upsert:true};
+           const updateDoc={
+              $set:{
+                   quantity:data.quan
+              },
+              
+
+           };
+           const resultQuantity=await itemCollection.updateOne(filter,updateDoc,options);
+           res.send({resultQuantity:'success'});
+           console.log(resultQuantity)
        })
 
     }
