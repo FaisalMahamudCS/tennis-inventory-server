@@ -30,6 +30,26 @@ async function run(){
            console.log(item);
            res.send(item);
        })
+       //all item view
+       //add item
+       app.post('/item',async(req,res)=>{
+           const item=req.body;
+           const result=await itemCollection.insertOne(item);
+           res.send(result);
+       })
+
+       //find item of the single user
+       app.get('/myitem',async(req,res)=>{
+        const email=req.query.email;
+        const query={email:email};
+        const cursor=itemCollection.find(query);
+        const myitem=await cursor.toArray();
+        console.log(myitem);
+        res.send(myitem);
+    })
+
+
+       //single item view
        app.get('/item/:id',async(req,res)=>{
            const id=req.params.id;
            const query={ _id:ObjectId(id)};
