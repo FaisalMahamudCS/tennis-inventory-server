@@ -79,7 +79,7 @@ console.log(result);
            const options={upsert:true};
            const updateDoc={
               $set:{
-                   quantity:data.quan
+                   quantity:data.quantities
               },
               
 
@@ -88,6 +88,52 @@ console.log(result);
            res.send({resultQuantity:'success'});
            console.log(resultQuantity)
        })
+
+       //get auth token
+       app.post('/login',async(req,res)=>{
+           const user=req.body;
+           const accessToken=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
+               expiresIn:'1d'
+           });
+           res.send({accessToken});
+       })
+
+app.get('/category',async(req,res)=>{
+ 
+    const cat=[
+        {
+            $group:{_id:{category:"$category",image:"$image"},total:{$sum:"$quantity"}}
+        }
+    ]
+    const result=await itemCollection.aggregate(cat).toArray();
+ console.log(result);
+    res.send(result);
+
+
+});
+//update restock
+app.put('/restock/:id',async(req,res)=>{
+    const id=req.params.id;
+   const data=req.body;
+    console.log(data)
+   //const quantity=data.quantit;
+    const filter={
+        _id:ObjectId(id)
+   };
+    const options={upsert:true};
+    const updateDoc={
+       $set:{
+            quantity:data.restock
+       },
+       
+
+    };
+    const resultQuantity=await itemCollection.updateOne(filter,updateDoc,options);
+    res.send({resultQuantity:'success'});
+    console.log(resultQuantity)
+})
+
+
 
     }
     finally{
