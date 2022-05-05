@@ -14,6 +14,25 @@ app.use(express.json());
 
 //mongodb
 
+//varify jWt
+function JWTVarification(req,res,next){
+    const authHeader=req.headers.authorization;
+    if(!authHeader){
+        return res.status(401).send({message:'unauthorized access'});
+    }
+    const token=authHeader.split(' ')[1];
+    jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+        if(err){
+            return res.status(403).send({message:'Forbidden access'})
+        }
+        console.log(decoded)
+        req.decoded=decoded;
+          next();
+    })
+
+    //console.log(authHeader)
+  
+}
 
 const { route } = require('express/lib/application');
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASSWORD}@cluster0.ddqy0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -23,6 +42,8 @@ async function run(){
         await client.connect();
         //itemcollection
         const itemCollection = client.db("sports-gear-inventory").collection("item");
+        const categoryCollection = client.db("sports-gear-inventory").collection("category");
+   
        app.get('/item',async(req,res)=>{
            const query={};
            const cursor=itemCollection.find(query);
@@ -39,13 +60,22 @@ async function run(){
        })
 
        //find item of the single user
-       app.get('/myitem',async(req,res)=>{
+       app.get('/myitem',JWTVarification,async(req,res)=>{
+           const decodedEmail=req.decoded.email;
+           
+           //const authHeader=req.headers.authorization;
+           //console.log(authHeader)
         const email=req.query.email;
+        if(email===decodedEmail){
         const query={email:email};
         const cursor=itemCollection.find(query);
         const myitem=await cursor.toArray();
         console.log(myitem);
         res.send(myitem);
+        }
+        else{
+            res.status(403).send({message:'forbidden'})
+        }
     })
 //delete item
 app.delete('/item/:id', async (req, res) => {
@@ -99,18 +129,90 @@ console.log(result);
        })
 
 app.get('/category',async(req,res)=>{
+  
+    // const cate=[
+       
+    //     {
+            
+    //         $lookup:
+    //         {
+
+
+    //             from:'item',
+    //             localField:'category',
+    //             foreignField:'category',
+    //             as:'product'
+
+    //         }
+    //     },
+    //     {
+    //           $unwind:"$product"          
+    //     },
+    //   {
+    //       $project:{
+    //           _id:"$category",
+    //           photo:"$photo",
+    //           total:{$sum:"$item.quantity"}
+    //       }
+    //   }
+
+            
+
+    //     // {
+    //     //     $group:{_id:"$category",quantity:{$sum:"$quantity"}}
+    //     // }
+        
+    //     // ,{$group:{_id:"$category",total:{$sum:"$quantity"}}
+    // //},
  
-    const cat=[
-        {
-            $group:{_id:{category:"$category",image:"$image"},total:{$sum:"$quantity"}}
-        }
-    ]
-    const result=await itemCollection.aggregate(cat).toArray();
- console.log(result);
-    res.send(result);
+
+    // ]
+
+    // const cat=[
+
+    //     {
+    //         $group:{_id:"$category","price":{"first":"$price"},total:{$sum:"$quantity"}}
+    //     }
+    // ]
+    // categoryCollection.aggregate(cate).toArray(function(err,result){
+    //      console.log(result);
+    //      res.send(result);
+    //  })
+    //const query={};
+    const cursor=categoryCollection.find();
+
+    
+    const category= await cursor.toArray();
+    console.log(category);
+    res.send(category);
+
 
 
 });
+
+app.get('/categorycount',async(req,res)=>{
+    const cate=[
+        {
+        $group:{
+        _id: {category:'$category',categoryphoto:'$categoryphoto'},
+        total: {
+          $sum:'$quantity'
+        },
+        
+        }
+        
+    
+         
+       
+    }  
+    ]
+    const resl=  await   itemCollection.aggregate(cate);
+   
+    const result= await resl.toArray();
+       // console.log(result)
+        res.send(result)
+   
+})
 //update restock
 app.put('/restock/:id',async(req,res)=>{
     const id=req.params.id;
