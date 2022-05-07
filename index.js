@@ -96,6 +96,15 @@ console.log(result);
            const result =await itemCollection.findOne(query);
            res.send(result);
        })
+//single category
+          app.get('/category/:category',async(req,res)=>{
+           const category=req.params.category;
+           const query={category:category};
+           const cursor = itemCollection.find(query);
+           const categoryProduct=await cursor.toArray();
+           res.send(categoryProduct);
+           console.log(categoryProduct)
+       })
 
        //update delivery item on Click
        app.put('/item/:id',async(req,res)=>{
@@ -191,7 +200,7 @@ app.get('/category',async(req,res)=>{
 
 });
 
-app.get('/categorycount',(req,res)=>{
+app.get('/categorycount',async(req,res)=>{
     const cate=[
         {
         $group:{
@@ -202,39 +211,15 @@ app.get('/categorycount',(req,res)=>{
         
         }
         
+        
     
          
        
     }  
     ]
-  const result=  itemCollection.aggregate(cate)
- result.toArray(function(cursorError,cursorDocs){
-     console.log(cursorDocs)
-     res.send(cursorDocs);
- })
-    // .then(res => {
-    //     console.log(res)
-    //     res.send(res)
-    //   res.forEach(order => console.log(JSON.stringify(order)));
-    // }).catch(err => {
-    //   console.log("Error: Update unsuccessfull.")
-    // }).finally(() => {
-
-    // })
-    // return res.send({
-    //     data:{
-    //         cursor:cursor,
-    //     }
-    // })
-   // res.send(cursor);
-    //   itemCollection.aggregate(cate,function(err,result){
-    //       console.log(result);
-    //       res.send(result);
-    //   });
-   
-    // const result= await resl.toArray();
-    //    // console.log(result)
-    //     res.send(result)
+  const cursor=  itemCollection.aggregate(cate);
+  const result=await cursor.toArray();
+res.send(result)
    
 })
 //update restock
