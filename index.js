@@ -109,7 +109,8 @@ console.log(result);
            const options={upsert:true};
            const updateDoc={
               $set:{
-                   quantity:data.quantities
+                   quantity:data.quantities,
+                   sold:data.solds
               },
               
 
@@ -190,7 +191,7 @@ app.get('/category',async(req,res)=>{
 
 });
 
-app.get('/categorycount',async(req,res)=>{
+app.get('/categorycount',(req,res)=>{
     const cate=[
         {
         $group:{
@@ -206,11 +207,34 @@ app.get('/categorycount',async(req,res)=>{
        
     }  
     ]
-    const resl=  await   itemCollection.aggregate(cate);
+  const result=  itemCollection.aggregate(cate)
+ result.toArray(function(cursorError,cursorDocs){
+     console.log(cursorDocs)
+     res.send(cursorDocs);
+ })
+    // .then(res => {
+    //     console.log(res)
+    //     res.send(res)
+    //   res.forEach(order => console.log(JSON.stringify(order)));
+    // }).catch(err => {
+    //   console.log("Error: Update unsuccessfull.")
+    // }).finally(() => {
+
+    // })
+    // return res.send({
+    //     data:{
+    //         cursor:cursor,
+    //     }
+    // })
+   // res.send(cursor);
+    //   itemCollection.aggregate(cate,function(err,result){
+    //       console.log(result);
+    //       res.send(result);
+    //   });
    
-    const result= await resl.toArray();
-       // console.log(result)
-        res.send(result)
+    // const result= await resl.toArray();
+    //    // console.log(result)
+    //     res.send(result)
    
 })
 //update restock
