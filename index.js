@@ -43,7 +43,8 @@ async function run(){
         //itemcollection
         const itemCollection = client.db("sports-gear-inventory").collection("item");
         const categoryCollection = client.db("sports-gear-inventory").collection("category");
-   
+        const supplierCollection = client.db("sports-gear-inventory").collection("supplier");
+    
        app.get('/item',async(req,res)=>{
            const query={};
            const cursor=itemCollection.find(query);
@@ -193,12 +194,18 @@ app.get('/category',async(req,res)=>{
 
     
     const category= await cursor.toArray();
-    console.log(category);
+  //  console.log(category);
     res.send(category);
 
 
 
 });
+
+app.get('/supplier',async(req,res)=>{
+    const cursor=supplierCollection.find();
+    const supplier =await cursor.toArray();
+res.send(supplier);
+})
 
 app.get('/categorycount',async(req,res)=>{
     const cate=[
